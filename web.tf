@@ -219,6 +219,38 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 output "web_ip" {
   value = aws_instance.webos.public_ip
 }
+#creating vpc
+resource "aws_vpc" "new-vpc" {
+  cidr_block       = "192.168.0.0/16"
+  instance_tenancy = "default"
+  enable_dns_hostnames = "true"
 
+  tags = {
+    Name = "new-vpc"
+  }
+}
+#Creating Public Subnet
+resource "aws_subnet" "public" {
+  depends_on = [aws_vpc.new-vpc, ]
+  vpc_id     = aws_vpc.new-vpc.id
+  cidr_block = "192.168.0.0/24"
+  availability_zone = "ap-south-1a"
+  map_public_ip_on_launch  =  true
+  tags = {
+    Name = "Public"
+  }
+}
+
+#Creating Private Subnet
+resource "aws_subnet" "private" {
+  depends_on = [ aws_vpc.new-vpc,
+                  aws_subnet.public, ]
+  vpc_id     = aws_vpc.new-vpc.id
+  cidr_block = "192.168.1.0/24"
+  availability_zone = "ap-south-1b"
+    tags = {
+    Name = "Private"
+  }
+}
 
 
